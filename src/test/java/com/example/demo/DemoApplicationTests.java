@@ -39,14 +39,14 @@ class DemoApplicationTests {
 	}
 
 	@Test
-	void invalidListShouldThrowException() {
+	void invalidListServiceTest() {
 		List<String> invalidItems = new ArrayList<String>(Arrays.asList("durian","plum","pear"));
 		Optional<Quotation> opt = quotationService.getQuotations(invalidItems);
 		Assertions.assertTrue(opt.isEmpty());
 	}
 
 	@Test
-	void testControllerShouldThrowException() throws Exception {
+	void controllerInvalidListTest() throws Exception {
 
 		JsonObject durianItem = Json.createObjectBuilder()
 				.add("item","durian")
