@@ -7,6 +7,7 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,26 +50,21 @@ public class PurchaseOrderRestController {
                         lineItemMap.put(item,v.getInt("quantity"));
                     });
 
-//            for (String i : itemNames) {
-//                System.out.print(">>>>>> item Names");
-//                System.out.print(i);
-//            }
 
             System.out.println("lineItemHashmap---->"+Arrays.asList(lineItemMap));
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error creating List<String> items");
         }
 
         Optional<Quotation> opt = quotationSvc.getQuotations(itemNames);
         if(opt.isEmpty()) {
-            //help
-            return ResponseEntity.ok(null);
+            return ResponseEntity.status(400).body(Json.createObjectBuilder().build().toString());
         }
 
         Quotation quotation = opt.get();
 
-        double cost = calculateTotalCost(itemNames,lineItemMap,quotation);
+        double cost = quotationSvc.calculateTotalCost(itemNames,lineItemMap,quotation);
         System.out.println(">>> totalcost:"+cost);
 
         JsonObject totalCost = Json.createObjectBuilder()
@@ -82,18 +78,5 @@ public class PurchaseOrderRestController {
         return ResponseEntity.ok(totalCost.toString());
     }
 
-    public double calculateTotalCost(List<String> itemNames, Map<String,Integer> lineItemMap, Quotation q ) {
-        double totalCost = 0.00;
 
-        Map<String,Float> qMap = q.getQuotations();
-
-        for (String item : itemNames) {
-
-            double cost = qMap.get(item)*lineItemMap.get(item);
-            totalCost+=cost;
-
-        }
-
-        return totalCost;
-    }
 }

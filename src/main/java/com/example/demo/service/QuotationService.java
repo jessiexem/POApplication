@@ -6,14 +6,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class QuotationService {
@@ -36,16 +34,20 @@ public class QuotationService {
 
         RestTemplate template = new RestTemplate();
 
-        ResponseEntity<String> resp = template.exchange(req,String.class);
-
-        System.out.println(">>>>QuotationService getQuotation: "+resp.getBody());
-
         try {
-            Quotation quotation = createQuotation(resp.getBody());
-            return Optional.of(quotation);
-        } catch (Exception e) {
-            System.out.println(">>>> QuotationService - getQuotations: Error creating Quotation");
-            e.printStackTrace();
+            ResponseEntity<String> resp = template.exchange(req,String.class);
+            System.out.println(">>>>QuotationService getQuotation: "+resp.getBody());
+            if (resp.getStatusCodeValue() == 200) {
+                Quotation quotation = createQuotation(resp.getBody());
+                return Optional.of(quotation);
+            }
+            else {
+                System.out.println("Resp status is not 200. Resp status is "+resp.getStatusCodeValue());
+            }
+        } catch (RestClientException e) {
+            System.out.println(">>>> QuotationService - getQuotations: RestClientException"+e.getMessage());
+        } catch (JsonException e) {
+            System.out.println(">>>> QuotationService - getQuotations: JsonException"+e.getMessage());
         }
 
         return Optional.empty();
@@ -78,5 +80,20 @@ public class QuotationService {
             System.out.println("----- Svc: createQuotation: unable to convert to JsonObject");
         }
         return quotation;
+    }
+
+    public double calculateTotalCost(List<String> itemNames, Map<String,Integer> lineItemMap, Quotation q ) {
+        double totalCost = 0.00;
+
+        Map<String,Float> qMap = q.getQuotations();
+
+        for (String item : itemNames) {
+
+            double cost = qMap.get(item)*lineItemMap.get(item);
+            totalCost+=cost;
+
+        }
+
+        return totalCost;
     }
 }
