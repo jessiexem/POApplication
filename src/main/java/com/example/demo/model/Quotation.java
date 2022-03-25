@@ -7,9 +7,8 @@ import java.util.Map;
 public class Quotation {
     private String quoteId;
     private Map<String, Float> quotations = new HashMap<>();
-    public String getQuoteId() {
-        return quoteId;
-    }
+
+    public String getQuoteId() {return quoteId;}
     public void setQuoteId(String quoteId) {
         this.quoteId = quoteId;
     }
